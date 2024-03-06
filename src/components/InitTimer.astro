@@ -7,12 +7,13 @@
 				id="title-bar"
 				class="mb-6 flex justify-between rounded-md bg-dark-600 pl-3 pr-2"
 			>
-				<h1 class="font-bold">
-					Timer <span id="counter-number"></span>
-				</h1>
+				<span
+					contenteditable="true"
+					id="title"
+					class="mr-2 w-full font-bold"></span>
 				<span
 					id="initial-time-indicator"
-					class="ml-auto mr-2 font-mono text-dark-300"></span>
+					class="mr-2 font-mono text-dark-300"></span>
 				<button
 					id="delete-button"
 					class="ri-close-circle-fill hover:text-red-200"></button>
@@ -110,6 +111,7 @@
 		deleteButton;
 		initialTime;
 		timeRemaining;
+		name;
 		timer;
 		hoursEl;
 		minutesEl;
@@ -153,11 +155,17 @@
 				this.shadowRoot?.adoptedStyleSheets.push(newSheet);
 			}
 
+			this.initialTime = parseInt(this.getAttribute('initial')) || 600;
+			this.title = this.getAttribute('title') ?? null;
+			this.group = this.getAttribute('group') ?? 0;
 			this.setDisplay(this.initialTime * 10);
+
 			const counterEl = document.getElementById('counter');
 			const currentCount = parseInt(counterEl.dataset.counter) + 1;
-			(this.shadowRoot?.getElementById('counter-number')).textContent =
-				currentCount.toString();
+			this.titleEl.textContent =
+				this.title !== 'null' ?
+					this.title
+				:	'Timer ' + currentCount.toString();
 			counterEl.dataset.counter = currentCount.toString();
 
 			const start = () => {
@@ -210,9 +218,24 @@
 				this.timeRemaining
 			).join(':');
 
-			this.deleteButton.addEventListener('click', () => {
+			const deleteSelf = () => {
+				this.setPersistance(false);
 				this.remove();
+			};
+			this.deleteButton.addEventListener('click', () => {
+				deleteSelf();
 			});
+			document.addEventListener('delete-all-timers', deleteSelf)
+
+			this.titleEl.addEventListener('input', e => {
+				this.title = e.currentTarget.textContent.replaceAll('\n', ' ');
+				if (!e.data) {
+					e.currentTarget.blur();
+					e.currentTarget.textContent = this.title;
+				}
+				this.setPersistance(true, true);
+			});
+			this.setPersistance(true);
 		}
 		parseSeconds(seconds) {
 			seconds /= 10;
@@ -230,8 +253,6 @@
 			];
 		}
 		startTimer() {
-			// TODO: make this use milliseconds so that the state of the second is preserved.
-			// Also, make this save state using localStorage.
 			if (this.timeRemaining > 0 && !this.timer) {
 				this.timer = setInterval(() => {
 					if (this.timeRemaining === 0) {
@@ -261,6 +282,71 @@
 		timerComplete() {
 			this.timeDisplay.dataset.done = 'true';
 			return;
+		}
+		/**
+		 * Set the persistance state of the element. If true, adds to localStorage. If false, removes from localStorage if exists.
+		 * @param {boolean} value
+		 * @param {boolean?} update
+		 */
+		setPersistance(value, update) {
+			/**
+			 * @type {any[]}
+			 */
+			const currentStorage = JSON.parse(
+				window.localStorage.getItem('timers')
+			);
+			const giveUniqueId = () => {
+				const val = Math.floor(1000 + Math.random() * 9000);
+				this.id = val;
+				if (
+					currentStorage != null &&
+					currentStorage.some(e => e.id == this.id)
+				) {
+					this.id = parseInt(this.id) + 1;
+				}
+			};
+			if (value) {
+				if (update) {
+					const index = currentStorage.findIndex(
+						item => item.id == this.id
+					);
+					const data = {
+						id: this.id,
+						initialTime: this.initialTime,
+						title: this.title,
+						group: 0,
+					};
+					currentStorage[index] = data;
+					const newStorage = JSON.stringify([...currentStorage]);
+					window.localStorage.setItem('timers', newStorage);
+					return;
+				}
+				if (
+					currentStorage != null &&
+					currentStorage.some(e => e.id == this.id)
+				)
+					return;
+				giveUniqueId();
+				const data = {
+					id: this.id,
+					initialTime: this.initialTime,
+					title: this.title,
+					group: 0,
+				};
+				const newStorage =
+					currentStorage != null ?
+						JSON.stringify([...currentStorage, data])
+					:	JSON.stringify([data]);
+				window.localStorage.setItem('timers', newStorage);
+			} else {
+				// remove from localStorage by unique id from data.
+				const index = currentStorage.findIndex(
+					item => item.id == this.id
+				);
+				currentStorage.splice(index, 1);
+				const newStorage = JSON.stringify(currentStorage);
+				window.localStorage.setItem('timers', newStorage);
+			}
 		}
 	}
 	customElements.define('timer-slot', TimerElement);

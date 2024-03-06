@@ -20,33 +20,43 @@ import Logo from '../components/Logo.astro';
 			<Logo />
 			<div class="hidden" id="counter" data-counter="0"></div>
 			<button
+				id="global-delete"
+				class="mr-2 rounded-full bg-dark-600 px-4 py-1 font-mono text-rose-400 hover:bg-dark-700 w500:hidden"
+				><i class="ri-close-large-fill mr-2"></i>DELETE All</button
+			>
+			<button
 				id="global-start"
-				class="mr-2 rounded-full bg-dark-500 px-4 py-1 font-mono w500:hidden"
+				class="mr-2 rounded-full bg-dark-600 px-4 py-1 font-mono text-green-400 hover:bg-dark-700 w500:hidden"
 				><i class="ri-play-large-fill mr-2"></i>Start All</button
 			>
 			<button
 				id="global-pause"
-				class="mr-2 rounded-full bg-dark-500 px-4 py-1 font-mono w500:hidden"
+				class="mr-2 rounded-full bg-dark-600 px-4 py-1 font-mono text-yellow-400 hover:bg-dark-700 w500:hidden"
 				><i class="ri-pause-fill ri-lg mr-2"></i>Pause All</button
 			>
 			<button
 				id="global-stop"
-				class="mr-2 rounded-full bg-dark-500 px-4 py-1 font-mono w500:hidden"
+				class="mr-2 rounded-full bg-dark-600 px-4 py-1 font-mono text-red-300 hover:bg-dark-700 w500:hidden"
 				><i class="ri-stop-large-fill mr-2"></i>Stop All</button
 			>
 			<button
+				id="global-delete-mobile"
+				class="mr-2 hidden aspect-square w-8 rounded-full bg-dark-700 p-1 w500:flex items-center justify-center font-mono text-rose-400"
+				><i class="ri-close-fill ri-xl"></i></button
+			>
+			<button
 				id="global-start-mobile"
-				class="mr-2 hidden aspect-square w-8 rounded-full bg-dark-500 p-1 font-mono w500:inline"
-				><i class="ri-play-large-fill"></i></button
+				class="mr-2 hidden aspect-square w-8 rounded-full bg-dark-700 p-1 font-mono text-green-400 w500:flex items-center justify-center"
+				><i class="ri-play-large-fill ml-0.5"></i></button
 			>
 			<button
 				id="global-pause-mobile"
-				class="mr-2 hidden aspect-square w-8 rounded-full bg-dark-500 p-1 font-mono w500:inline"
+				class="mr-2 hidden aspect-square w-8 rounded-full bg-dark-700 p-1 font-mono text-yellow-400 w500:flex items-center justify-center"
 				><i class="ri-pause-fill ri-lg"></i></button
 			>
 			<button
 				id="global-stop-mobile"
-				class="mr-2 hidden aspect-square w-8 rounded-full bg-dark-500 p-1 font-mono w500:inline"
+				class="mr-2 hidden aspect-square w-8 rounded-full bg-dark-700 p-1 font-mono text-red-300 w500:flex items-center justify-center"	
 				><i class="ri-stop-large-fill"></i></button
 			>
 		</nav>
@@ -55,7 +65,6 @@ import Logo from '../components/Logo.astro';
 			class="flex flex-wrap justify-start px-8 w500:flex-col w500:items-center"
 		>
 			<InitTimer />
-			<timer-slot></timer-slot>
 			<Skeleton />
 		</section>
 		<script is:inline>
