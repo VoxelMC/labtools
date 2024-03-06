@@ -1,0 +1,460 @@
+<template id="timer-template">
+	<div id="timer" class="mb-4 h-44 w-80 px-4">
+		<div
+			class="mb-4 h-full w-full rounded-lg bg-dark-900 p-2 text-dark-200"
+		>
+			<div
+				id="title-bar"
+				class="mb-6 flex justify-between rounded-md bg-dark-600 pl-3 pr-2"
+			>
+				<h1 class="font-bold">
+					Timer <span id="counter-number"></span>
+				</h1>
+				<span
+					id="initial-time-indicator"
+					class="font-mono text-dark-300 ml-auto mr-2"></span>
+				<button id="delete-button" class="ri-close-circle-fill hover:text-red-200"></button>
+			</div>
+			<div
+				id="display"
+				class="mx-auto flex w-fit px-6 font-mono text-5xl"
+			>
+				<input
+					type="text"
+					inputmode="numeric"
+					id="hours"
+					maxlength="2"
+					onkeypress="validate(event)"
+					class="!inline max-w-[2ch] bg-transparent"
+				/>
+				<span id="sep-1">:</span>
+				<input
+					type="text"
+					inputmode="numeric"
+					id="minutes"
+					maxlength="2"
+					onkeypress="validate(event)"
+					class="!inline max-w-[2ch] bg-transparent"
+				/>
+				<span id="sep-2">:</span>
+				<input
+					type="text"
+					inputmode="numeric"
+					id="seconds"
+					maxlength="2"
+					onkeypress="validate(event)"
+					class="!inline max-w-[2ch] bg-transparent"
+				/>
+			</div>
+
+			<div id="controls" class="mb-4 mt-5 flex justify-center">
+				<button
+					id="start-button"
+					data-hidden="false"
+					class="rounded-full bg-dark-700 px-4 text-center hover:bg-dark-600 data-[hidden=true]:hidden"
+					><i class="ri-play-large-fill"></i> Start</button
+				>
+				<button
+					id="pause-button"
+					data-hidden="true"
+					class="mr-3 rounded-full bg-dark-700 px-4 text-center hover:bg-dark-600 data-[hidden=true]:hidden"
+					><i class="ri-pause-fill ri-lg"></i> Pause</button
+				>
+				<button
+					id="stop-button"
+					data-hidden="true"
+					class="rounded-full bg-dark-700 px-4 text-center hover:bg-dark-600 data-[hidden=true]:hidden"
+					><i class="ri-stop-large-fill"></i> Stop</button
+				>
+			</div>
+
+			<style>
+				* {
+				}
+			</style>
+		</div>
+	</div>
+	<script is:inline>
+		function validate(evt) {
+			var theEvent = evt;
+
+			// Handle paste
+			if (theEvent.type === 'paste') {
+				key = event.clipboardData.getData('text/plain');
+			} else {
+				// Handle key press
+				var key = theEvent.keyCode || theEvent.which;
+				key = String.fromCharCode(key);
+			}
+			var regex = /[0-9]|\./;
+			if (!regex.test(key)) {
+				theEvent.returnValue = false;
+				if (theEvent.preventDefault) theEvent.preventDefault();
+			}
+		}
+	</script>
+</template>
+<script is:inline>
+	class TimerElement extends HTMLElement {
+		timeDisplay;
+		titleEl;
+		startButton;
+		stopButton;
+		pauseButton;
+		deleteButton;
+		initialTime;
+		timeRemaining;
+		timer;
+		hoursEl;
+		minutesEl;
+		secondsEl;
+		initialTimeIndicatorEl;
+		timerEl;
+		constructor() {
+			super();
+			let template = document.getElementById(
+				'timer-template'
+			)
+			let tempContent = template.content;
+			const shadowRoot = this.attachShadow({ mode: 'open' });
+			shadowRoot.appendChild(tempContent.cloneNode(true));
+
+			this.timeDisplay = this.shadowRoot?.getElementById(
+				'display'
+			) 
+			this.titleEl = this.shadowRoot?.getElementById('title');
+			this.startButton = this.shadowRoot?.getElementById(
+				'start-button'
+			) 
+			this.stopButton = this.shadowRoot?.getElementById(
+				'stop-button'
+			) 
+			this.pauseButton = this.shadowRoot?.getElementById(
+				'pause-button'
+			) 
+			this.deleteButton = this.shadowRoot?.getElementById(
+				'delete-button'
+			) 
+
+			this.initialTime = 600;
+			this.timeRemaining = this.initialTime * 10;
+
+			this.hoursEl = this.shadowRoot?.getElementById(
+				'hours'
+			) 
+			this.minutesEl = this.shadowRoot?.getElementById(
+				'minutes'
+			) 
+			this.secondsEl = this.shadowRoot?.getElementById(
+				'seconds'
+			) 
+
+			this.initialTimeIndicatorEl = this.shadowRoot?.getElementById(
+				'initial-time-indicator'
+			) 
+			
+			this.timerEl = this.shadowRoot?.getElementById('timer') 
+		}
+		connectedCallback() {
+			for (let sheet of document.styleSheets) {
+				const newSheet = new CSSStyleSheet();
+				newSheet.replaceSync(
+					[...sheet.cssRules].map(s => s.cssText).join('\n')
+				);
+				this.shadowRoot?.adoptedStyleSheets.push(newSheet);
+			}
+
+			this.setDisplay(this.initialTime * 10);
+			const counterEl = document.getElementById('counter') 
+			const currentCount =
+				parseInt(counterEl.dataset.counter ) + 1;
+			(
+				this.shadowRoot?.getElementById('counter-number') 
+			).textContent = currentCount.toString();
+			counterEl.dataset.counter = currentCount.toString();
+
+			const start = () => {
+				this.startButton.dataset.hidden = 'true';
+				this.stopButton.dataset.hidden =
+					this.pauseButton.dataset.hidden = 'false';
+				this.startTimer();
+			};
+
+			const pause = () => {
+				this.stopButton.dataset.hidden =
+					this.pauseButton.dataset.hidden = 'true';
+				this.startButton.dataset.hidden = 'false';
+				this.endTimer();
+			};
+
+			const stop = () => {
+				this.stopButton.dataset.hidden =
+					this.pauseButton.dataset.hidden = 'true';
+				this.startButton.dataset.hidden = 'false';
+
+				this.setDisplay(this.initialTime * 10);
+				this.timeRemaining = this.initialTime * 10;
+				this.endTimer();
+			};
+
+			this.startButton?.addEventListener('click', start);
+			this.pauseButton?.addEventListener('click', pause);
+			this.stopButton?.addEventListener('click', stop);
+			document.addEventListener('global-start', start);
+			document.addEventListener('global-pause', pause);
+			document.addEventListener('global-stop', stop);
+
+			const handleTimerChange = () => {
+				const hts = parseInt(this.hoursEl.value) * 60 * 60;
+				const mts = parseInt(this.minutesEl.value) * 60;
+				const seconds = parseInt(this.secondsEl.value);
+				this.initialTime = hts + mts + seconds;
+				this.timeRemaining = this.initialTime * 10;
+				this.setDisplay(this.timeRemaining);
+				this.initialTimeIndicatorEl.textContent = this.parseSeconds(
+					this.timeRemaining
+				).join(':');
+			};
+			this.hoursEl.addEventListener('change', handleTimerChange);
+			this.minutesEl.addEventListener('change', handleTimerChange);
+			this.secondsEl.addEventListener('change', handleTimerChange);
+			this.initialTimeIndicatorEl.textContent = this.parseSeconds(
+				this.timeRemaining
+			).join(':');
+
+			this.deleteButton.addEventListener('click', () => {
+				this.remove();
+			})
+		}
+		parseSeconds(seconds) {
+			seconds /= 10;
+			const hours = Math.floor(seconds / (60 * 60));
+			seconds -= hours * (60 * 60);
+
+			const minutes = Math.floor(seconds / 60);
+			seconds -= minutes * 60;
+			seconds = Math.floor(seconds);
+
+			return [
+				isNaN(hours) ? '00' : hours.toString().padStart(2, '0'),
+				isNaN(minutes) ? '00' : minutes.toString().padStart(2, '0'),
+				isNaN(seconds) ? '00' : seconds.toString().padStart(2, '0'),
+			];
+		}
+		startTimer() {
+			// TODO: make this use milliseconds so that the state of the second is preserved.
+			// Also, make this save state using localStorage.
+			if (this.timeRemaining > 0 && !this.timer) {
+				this.timer = setInterval(() => {
+					if (this.timeRemaining === 0) {
+						this.endTimer();
+						this.timerComplete();
+						return;
+					}
+					this.timeRemaining -= 1;
+					this.setDisplay(this.timeRemaining);
+				}, 100);
+			} else {
+			}
+		}
+		endTimer() {
+			clearInterval(this.timer);
+			this.timer = undefined;
+		}
+		setTimer() {
+			this.timeDisplay.textContent;
+		}
+		setDisplay(seconds) {
+			let [hrs, mins, secs] = this.parseSeconds(seconds);
+			this.hoursEl.value = hrs;
+			this.minutesEl.value = mins;
+			this.secondsEl.value = secs;
+		}
+		timerComplete() {
+			return;
+		}
+	}
+	customElements.define('timer-slot', TimerElement);
+</script>
+<!-- <script> -->
+<!-- 	class TimerElement extends HTMLElement { -->
+<!-- 		timeDisplay; -->
+<!-- 		titleEl; -->
+<!-- 		startButton; -->
+<!-- 		stopButton; -->
+<!-- 		pauseButton; -->
+<!-- 		deleteButton; -->
+<!-- 		initialTime; -->
+<!-- 		timeRemaining; -->
+<!-- 		timer: number | undefined; -->
+<!-- 		hoursEl; -->
+<!-- 		minutesEl; -->
+<!-- 		secondsEl; -->
+<!-- 		initialTimeIndicatorEl; -->
+<!-- 		timerEl; -->
+<!-- 		constructor() { -->
+<!-- 			super(); -->
+<!-- 			let template = document.getElementById( -->
+<!-- 				'timer-template' -->
+<!-- 			) as HTMLTemplateElement; -->
+<!-- 			let tempContent = template.content; -->
+<!-- 			const shadowRoot = this.attachShadow({ mode: 'open' }); -->
+<!-- 			shadowRoot.appendChild(tempContent.cloneNode(true)); -->
+<!---->
+<!-- 			this.timeDisplay = this.shadowRoot?.getElementById( -->
+<!-- 				'display' -->
+<!-- 			) as HTMLElement; -->
+<!-- 			this.titleEl = this.shadowRoot?.getElementById('title'); -->
+<!-- 			this.startButton = this.shadowRoot?.getElementById( -->
+<!-- 				'start-button' -->
+<!-- 			) as HTMLButtonElement; -->
+<!-- 			this.stopButton = this.shadowRoot?.getElementById( -->
+<!-- 				'stop-button' -->
+<!-- 			) as HTMLButtonElement; -->
+<!-- 			this.pauseButton = this.shadowRoot?.getElementById( -->
+<!-- 				'pause-button' -->
+<!-- 			) as HTMLButtonElement; -->
+<!-- 			this.deleteButton = this.shadowRoot?.getElementById( -->
+<!-- 				'delete-button' -->
+<!-- 			) as HTMLButtonElement; -->
+<!---->
+<!-- 			this.initialTime = 600; -->
+<!-- 			this.timeRemaining = this.initialTime * 10; -->
+<!---->
+<!-- 			this.hoursEl = this.shadowRoot?.getElementById( -->
+<!-- 				'hours' -->
+<!-- 			) as HTMLInputElement; -->
+<!-- 			this.minutesEl = this.shadowRoot?.getElementById( -->
+<!-- 				'minutes' -->
+<!-- 			) as HTMLInputElement; -->
+<!-- 			this.secondsEl = this.shadowRoot?.getElementById( -->
+<!-- 				'seconds' -->
+<!-- 			) as HTMLInputElement; -->
+<!---->
+<!-- 			this.initialTimeIndicatorEl = this.shadowRoot?.getElementById( -->
+<!-- 				'initial-time-indicator' -->
+<!-- 			) as HTMLInputElement; -->
+<!-- 			 -->
+<!-- 			this.timerEl = this.shadowRoot?.getElementById('timer') as HTMLElement; -->
+<!-- 		} -->
+<!-- 		connectedCallback() { -->
+<!-- 			for (let sheet of document.styleSheets) { -->
+<!-- 				const newSheet = new CSSStyleSheet(); -->
+<!-- 				newSheet.replaceSync( -->
+<!-- 					[...sheet.cssRules].map(s => s.cssText).join('\n') -->
+<!-- 				); -->
+<!-- 				this.shadowRoot?.adoptedStyleSheets.push(newSheet); -->
+<!-- 			} -->
+<!---->
+<!-- 			this.setDisplay(this.initialTime * 10); -->
+<!-- 			const counterEl = document.getElementById('counter') as HTMLElement; -->
+<!-- 			const currentCount = -->
+<!-- 				parseInt(counterEl.dataset.counter as string) + 1; -->
+<!-- 			( -->
+<!-- 				this.shadowRoot?.getElementById('counter-number') as HTMLElement -->
+<!-- 			).textContent = currentCount.toString(); -->
+<!-- 			counterEl.dataset.counter = currentCount.toString(); -->
+<!---->
+<!-- 			const start = () => { -->
+<!-- 				this.startButton.dataset.hidden = 'true'; -->
+<!-- 				this.stopButton.dataset.hidden = -->
+<!-- 					this.pauseButton.dataset.hidden = 'false'; -->
+<!-- 				this.startTimer(); -->
+<!-- 			}; -->
+<!---->
+<!-- 			const pause = () => { -->
+<!-- 				this.stopButton.dataset.hidden = -->
+<!-- 					this.pauseButton.dataset.hidden = 'true'; -->
+<!-- 				this.startButton.dataset.hidden = 'false'; -->
+<!-- 				this.endTimer(); -->
+<!-- 			}; -->
+<!---->
+<!-- 			const stop = () => { -->
+<!-- 				this.stopButton.dataset.hidden = -->
+<!-- 					this.pauseButton.dataset.hidden = 'true'; -->
+<!-- 				this.startButton.dataset.hidden = 'false'; -->
+<!---->
+<!-- 				this.setDisplay(this.initialTime * 10); -->
+<!-- 				this.timeRemaining = this.initialTime * 10; -->
+<!-- 				this.endTimer(); -->
+<!-- 			}; -->
+<!---->
+<!-- 			this.startButton?.addEventListener('click', start); -->
+<!-- 			this.pauseButton?.addEventListener('click', pause); -->
+<!-- 			this.stopButton?.addEventListener('click', stop); -->
+<!-- 			document.addEventListener('global-start', start); -->
+<!-- 			document.addEventListener('global-pause', pause); -->
+<!-- 			document.addEventListener('global-stop', stop); -->
+<!---->
+<!-- 			const handleTimerChange = () => { -->
+<!-- 				const hts = parseInt(this.hoursEl.value) * 60 * 60; -->
+<!-- 				const mts = parseInt(this.minutesEl.value) * 60; -->
+<!-- 				const seconds = parseInt(this.secondsEl.value); -->
+<!-- 				this.initialTime = hts + mts + seconds; -->
+<!-- 				this.timeRemaining = this.initialTime * 10; -->
+<!-- 				this.setDisplay(this.timeRemaining); -->
+<!-- 				this.initialTimeIndicatorEl.textContent = this.parseSeconds( -->
+<!-- 					this.timeRemaining -->
+<!-- 				).join(':'); -->
+<!-- 			}; -->
+<!-- 			this.hoursEl.addEventListener('change', handleTimerChange); -->
+<!-- 			this.minutesEl.addEventListener('change', handleTimerChange); -->
+<!-- 			this.secondsEl.addEventListener('change', handleTimerChange); -->
+<!-- 			this.initialTimeIndicatorEl.textContent = this.parseSeconds( -->
+<!-- 				this.timeRemaining -->
+<!-- 			).join(':'); -->
+<!---->
+<!-- 			this.deleteButton.addEventListener('click', () => { -->
+<!-- 				this.remove(); -->
+<!-- 			}) -->
+<!-- 		} -->
+<!-- 		parseSeconds(seconds: number): [string, string, string] { -->
+<!-- 			seconds /= 10; -->
+<!-- 			const hours = Math.floor(seconds / (60 * 60)); -->
+<!-- 			seconds -= hours * (60 * 60); -->
+<!---->
+<!-- 			const minutes = Math.floor(seconds / 60); -->
+<!-- 			seconds -= minutes * 60; -->
+<!-- 			seconds = Math.floor(seconds); -->
+<!---->
+<!-- 			return [ -->
+<!-- 				isNaN(hours) ? '00' : hours.toString().padStart(2, '0'), -->
+<!-- 				isNaN(minutes) ? '00' : minutes.toString().padStart(2, '0'), -->
+<!-- 				isNaN(seconds) ? '00' : seconds.toString().padStart(2, '0'), -->
+<!-- 			]; -->
+<!-- 		} -->
+<!-- 		startTimer() { -->
+<!-- 			// TODO: make this use milliseconds so that the state of the second is preserved. -->
+<!-- 			// Also, make this save state using localStorage. -->
+<!-- 			if (this.timeRemaining > 0 && !this.timer) { -->
+<!-- 				this.timer = setInterval(() => { -->
+<!-- 					if (this.timeRemaining === 0) { -->
+<!-- 						this.endTimer(); -->
+<!-- 						this.timerComplete(); -->
+<!-- 						return; -->
+<!-- 					} -->
+<!-- 					this.timeRemaining -= 1; -->
+<!-- 					this.setDisplay(this.timeRemaining); -->
+<!-- 				}, 100); -->
+<!-- 			} else { -->
+<!-- 			} -->
+<!-- 		} -->
+<!-- 		endTimer() { -->
+<!-- 			clearInterval(this.timer); -->
+<!-- 			this.timer = undefined; -->
+<!-- 		} -->
+<!-- 		setTimer() { -->
+<!-- 			this.timeDisplay.textContent; -->
+<!-- 		} -->
+<!-- 		setDisplay(seconds: number) { -->
+<!-- 			let [hrs, mins, secs] = this.parseSeconds(seconds); -->
+<!-- 			this.hoursEl.value = hrs; -->
+<!-- 			this.minutesEl.value = mins; -->
+<!-- 			this.secondsEl.value = secs; -->
+<!-- 		} -->
+<!-- 		timerComplete() { -->
+<!-- 			return; -->
+<!-- 		} -->
+<!-- 	} -->
+<!-- 	customElements.define('timer-slot', TimerElement); -->
+<!-- </script> -->

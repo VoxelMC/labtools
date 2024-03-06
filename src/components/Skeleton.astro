@@ -1,0 +1,30 @@
+<div id="skeleton" class="h-44 w-80 px-4">
+	<div class="mb-4 h-full w-full rounded-lg bg-dark-900 p-2 text-dark-200">
+		<div
+			id="title-bar"
+			class="mb-6 flex justify-between rounded-md bg-dark-600 pl-3 pr-2"
+		>
+			<h1 class="font-bold">Timer n</h1>
+			<span id="initial-time-indicator" class="font-mono text-dark-300"
+				>--:--:--</span
+			>
+			<button
+				class="ri-checkbox-blank-circle-fill hover:ri-user-smile-line hover:text-green-200"
+			></button>
+		</div>
+		<div class="flex flex-col items-center justify-center">
+			<h1 class="font-mono font-bold">New Timer</h1>
+			<button
+				class="mt-2 aspect-square w-12 rounded-full bg-dark-600 hover:bg-dark-500"
+				id="new-timer-button"><i class="ri-add-fill ri-xl"></i></button
+			>
+		</div>
+	</div>
+</div>
+<script is:inline defer>
+	const addButton = document.getElementById('new-timer-button');
+	const skeleton = document.getElementById('skeleton');
+	addButton.addEventListener('click', e => {
+		skeleton.insertAdjacentHTML('beforebegin', '<timer-slot></timer-slot>');
+	});
+</script>
