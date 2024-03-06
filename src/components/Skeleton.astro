@@ -34,6 +34,6 @@
 	});
 	const currentStorage = JSON.parse(window.localStorage.getItem('timers'));
 	currentStorage && currentStorage.forEach(item => {
-		skeleton.insertAdjacentHTML('beforebegin', `<timer-slot id="${item.id}" initial=${item.inital} group="${item.group}" title="${item.title}"></timer-slot>`);
+		skeleton.insertAdjacentHTML('beforebegin', `<timer-slot id="${item.id}" initial=${item.initalTime} group="${item.group}" title="${item.title}"></timer-slot>`);
 	})
 </script>
