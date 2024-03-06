@@ -12,12 +12,15 @@
 				</h1>
 				<span
 					id="initial-time-indicator"
-					class="font-mono text-dark-300 ml-auto mr-2"></span>
-				<button id="delete-button" class="ri-close-circle-fill hover:text-red-200"></button>
+					class="ml-auto mr-2 font-mono text-dark-300"></span>
+				<button
+					id="delete-button"
+					class="ri-close-circle-fill hover:text-red-200"></button>
 			</div>
 			<div
 				id="display"
-				class="mx-auto flex w-fit px-6 font-mono text-5xl"
+				class="mx-auto flex w-fit px-6 font-mono text-5xl data-[done=true]:text-green-400"
+				data-done="false"
 			>
 				<input
 					type="text"
@@ -25,6 +28,7 @@
 					id="hours"
 					maxlength="2"
 					onkeypress="validate(event)"
+					onclick="this.select();"
 					class="!inline max-w-[2ch] bg-transparent"
 				/>
 				<span id="sep-1">:</span>
@@ -34,6 +38,7 @@
 					id="minutes"
 					maxlength="2"
 					onkeypress="validate(event)"
+					onclick="this.select();"
 					class="!inline max-w-[2ch] bg-transparent"
 				/>
 				<span id="sep-2">:</span>
@@ -43,6 +48,7 @@
 					id="seconds"
 					maxlength="2"
 					onkeypress="validate(event)"
+					onclick="this.select();"
 					class="!inline max-w-[2ch] bg-transparent"
 				/>
 			</div>
@@ -112,48 +118,31 @@
 		timerEl;
 		constructor() {
 			super();
-			let template = document.getElementById(
-				'timer-template'
-			)
+			let template = document.getElementById('timer-template');
 			let tempContent = template.content;
 			const shadowRoot = this.attachShadow({ mode: 'open' });
 			shadowRoot.appendChild(tempContent.cloneNode(true));
 
-			this.timeDisplay = this.shadowRoot?.getElementById(
-				'display'
-			) 
+			this.timeDisplay = this.shadowRoot?.getElementById('display');
 			this.titleEl = this.shadowRoot?.getElementById('title');
-			this.startButton = this.shadowRoot?.getElementById(
-				'start-button'
-			) 
-			this.stopButton = this.shadowRoot?.getElementById(
-				'stop-button'
-			) 
-			this.pauseButton = this.shadowRoot?.getElementById(
-				'pause-button'
-			) 
-			this.deleteButton = this.shadowRoot?.getElementById(
-				'delete-button'
-			) 
+			this.startButton = this.shadowRoot?.getElementById('start-button');
+			this.stopButton = this.shadowRoot?.getElementById('stop-button');
+			this.pauseButton = this.shadowRoot?.getElementById('pause-button');
+			this.deleteButton =
+				this.shadowRoot?.getElementById('delete-button');
 
 			this.initialTime = 600;
 			this.timeRemaining = this.initialTime * 10;
 
-			this.hoursEl = this.shadowRoot?.getElementById(
-				'hours'
-			) 
-			this.minutesEl = this.shadowRoot?.getElementById(
-				'minutes'
-			) 
-			this.secondsEl = this.shadowRoot?.getElementById(
-				'seconds'
-			) 
+			this.hoursEl = this.shadowRoot?.getElementById('hours');
+			this.minutesEl = this.shadowRoot?.getElementById('minutes');
+			this.secondsEl = this.shadowRoot?.getElementById('seconds');
 
 			this.initialTimeIndicatorEl = this.shadowRoot?.getElementById(
 				'initial-time-indicator'
-			) 
-			
-			this.timerEl = this.shadowRoot?.getElementById('timer') 
+			);
+
+			this.timerEl = this.shadowRoot?.getElementById('timer');
 		}
 		connectedCallback() {
 			for (let sheet of document.styleSheets) {
@@ -165,12 +154,10 @@
 			}
 
 			this.setDisplay(this.initialTime * 10);
-			const counterEl = document.getElementById('counter') 
-			const currentCount =
-				parseInt(counterEl.dataset.counter ) + 1;
-			(
-				this.shadowRoot?.getElementById('counter-number') 
-			).textContent = currentCount.toString();
+			const counterEl = document.getElementById('counter');
+			const currentCount = parseInt(counterEl.dataset.counter) + 1;
+			(this.shadowRoot?.getElementById('counter-number')).textContent =
+				currentCount.toString();
 			counterEl.dataset.counter = currentCount.toString();
 
 			const start = () => {
@@ -195,6 +182,7 @@
 				this.setDisplay(this.initialTime * 10);
 				this.timeRemaining = this.initialTime * 10;
 				this.endTimer();
+				this.timeDisplay.dataset.done = 'false';
 			};
 
 			this.startButton?.addEventListener('click', start);
@@ -224,7 +212,7 @@
 
 			this.deleteButton.addEventListener('click', () => {
 				this.remove();
-			})
+			});
 		}
 		parseSeconds(seconds) {
 			seconds /= 10;
@@ -271,6 +259,7 @@
 			this.secondsEl.value = secs;
 		}
 		timerComplete() {
+			this.timeDisplay.dataset.done = 'true';
 			return;
 		}
 	}

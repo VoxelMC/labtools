@@ -3,6 +3,10 @@ export default {
     content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
     theme: {
         extend: {
+            screens: {
+                w500: { max: '600px' },
+                w400: { max: '400px' },
+            },
             colors: {
                 dark: {
                     50: '#f2f2fb',

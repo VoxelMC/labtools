@@ -9,38 +9,71 @@ import Logo from '../components/Logo.astro';
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
 		<title>Timers | labtools.trevfox.dev</title>
 	</head>
 	<body class="bg-dark-950">
 		<nav
-			class="mb-4 flex h-10 w-full items-center justify-around bg-dark-900"
+			class="mb-4 flex h-10 w-full items-center justify-around bg-dark-900 w500:mb-8"
 		>
 			<Logo />
 			<div class="hidden" id="counter" data-counter="0"></div>
 			<button
 				id="global-start"
-				class="mr-2 rounded-full bg-dark-500 px-4 py-1 font-mono"
+				class="mr-2 rounded-full bg-dark-500 px-4 py-1 font-mono w500:hidden"
 				><i class="ri-play-large-fill mr-2"></i>Start All</button
 			>
 			<button
 				id="global-pause"
-				class="mr-2 rounded-full bg-dark-500 px-4 py-1 font-mono"
+				class="mr-2 rounded-full bg-dark-500 px-4 py-1 font-mono w500:hidden"
 				><i class="ri-pause-fill ri-lg mr-2"></i>Pause All</button
 			>
 			<button
 				id="global-stop"
-				class="mr-2 rounded-full bg-dark-500 px-4 py-1 font-mono"
+				class="mr-2 rounded-full bg-dark-500 px-4 py-1 font-mono w500:hidden"
 				><i class="ri-stop-large-fill mr-2"></i>Stop All</button
 			>
+			<button
+				id="global-start-mobile"
+				class="mr-2 hidden aspect-square w-8 rounded-full bg-dark-500 p-1 font-mono w500:inline"
+				><i class="ri-play-large-fill"></i></button
+			>
+			<button
+				id="global-pause-mobile"
+				class="mr-2 hidden aspect-square w-8 rounded-full bg-dark-500 p-1 font-mono w500:inline"
+				><i class="ri-pause-fill ri-lg"></i></button
+			>
+			<button
+				id="global-stop-mobile"
+				class="mr-2 hidden aspect-square w-8 rounded-full bg-dark-500 p-1 font-mono w500:inline"
+				><i class="ri-stop-large-fill"></i></button
+			>
 		</nav>
-		<section id="timers" class="flex flex-wrap justify-start px-8">
+		<section
+			id="timers"
+			class="flex flex-wrap justify-start px-8 w500:flex-col w500:items-center"
+		>
 			<InitTimer />
 			<timer-slot></timer-slot>
 			<Skeleton />
 		</section>
 		<script is:inline>
+			document
+				.getElementById('global-start-mobile')
+				.addEventListener('click', () => {
+					document.dispatchEvent(new Event('global-start'));
+				});
+			document
+				.getElementById('global-pause-mobile')
+				.addEventListener('click', () => {
+					document.dispatchEvent(new Event('global-pause'));
+				});
+			document
+				.getElementById('global-stop-mobile')
+				.addEventListener('click', () => {
+					document.dispatchEvent(new Event('global-stop'));
+				});
 			document
 				.getElementById('global-start')
 				.addEventListener('click', () => {
