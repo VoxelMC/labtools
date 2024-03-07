@@ -22,7 +22,7 @@ import Logo from '../components/Logo.astro';
 			<button
 				id="global-delete"
 				class="mr-2 rounded-full bg-dark-600 px-4 py-1 font-mono text-rose-400 hover:bg-dark-700 w500:hidden"
-				><i class="ri-close-large-fill mr-2"></i>DELETE All</button
+				><i class="ri-delete-bin-fill mr-2"></i>DELETE All</button
 			>
 			<button
 				id="global-start"
@@ -42,7 +42,7 @@ import Logo from '../components/Logo.astro';
 			<button
 				id="global-delete-mobile"
 				class="mr-2 hidden aspect-square w-8 rounded-full bg-dark-700 p-1 w500:flex items-center justify-center font-mono text-rose-400"
-				><i class="ri-close-fill ri-xl"></i></button
+				><i class="ri-delete-bin-fill"></i></button
 			>
 			<button
 				id="global-start-mobile"
@@ -69,6 +69,11 @@ import Logo from '../components/Logo.astro';
 		</section>
 		<script is:inline>
 			document
+				.getElementById('global-delete-mobile')
+				.addEventListener('click', () => {
+					document.dispatchEvent(new Event('delete-all-timers'));
+				});
+			document
 				.getElementById('global-start-mobile')
 				.addEventListener('click', () => {
 					document.dispatchEvent(new Event('global-start'));
@@ -82,6 +87,11 @@ import Logo from '../components/Logo.astro';
 				.getElementById('global-stop-mobile')
 				.addEventListener('click', () => {
 					document.dispatchEvent(new Event('global-stop'));
+				});
+			document
+				.getElementById('global-delete')
+				.addEventListener('click', () => {
+					document.dispatchEvent(new Event('delete-all-timers'));
 				});
 			document
 				.getElementById('global-start')

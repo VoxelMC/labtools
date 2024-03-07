@@ -210,6 +210,7 @@
 				this.initialTimeIndicatorEl.textContent = this.parseSeconds(
 					this.timeRemaining
 				).join(':');
+				this.setPersistance(true, true);
 			};
 			this.hoursEl.addEventListener('change', handleTimerChange);
 			this.minutesEl.addEventListener('change', handleTimerChange);
@@ -225,7 +226,9 @@
 			this.deleteButton.addEventListener('click', () => {
 				deleteSelf();
 			});
-			document.addEventListener('delete-all-timers', deleteSelf)
+			document.addEventListener('delete-all-timers', () => {
+				deleteSelf();
+			});
 
 			this.titleEl.addEventListener('input', e => {
 				this.title = e.currentTarget.textContent.replaceAll('\n', ' ');
@@ -310,6 +313,7 @@
 					const index = currentStorage.findIndex(
 						item => item.id == this.id
 					);
+					console.log(this.initialTime);
 					const data = {
 						id: this.id,
 						initialTime: this.initialTime,
