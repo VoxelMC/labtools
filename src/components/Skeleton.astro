@@ -5,11 +5,13 @@
 			class="mb-6 flex justify-between rounded-md bg-dark-600 pl-3 pr-2"
 		>
 			<h1 class="font-bold">Timer n</h1>
-			<span id="initial-time-indicator" class="font-mono ml-auto mr-2 text-dark-300"
-				>--:--:--</span
+			<span
+				id="initial-time-indicator"
+				class="ml-auto mr-2 font-mono text-dark-300">--:--:--</span
 			>
 			<button
 				id="mini-button"
+				data-dedication="This button was made for my love, Anastasia."
 				class="ri-checkbox-blank-circle-fill hover:ri-user-smile-line hover:text-green-200"
 			></button>
 		</div>
@@ -17,7 +19,7 @@
 			<h1 class="font-mono font-bold">New Timer</h1>
 			<button
 				class="mt-2 aspect-square w-12 rounded-full bg-dark-600 hover:bg-dark-500"
-				id="new-timer-button" data-dedication="This button was made for my love, Anastasia."><i class="ri-add-fill ri-xl"></i></button
+				id="new-timer-button"><i class="ri-add-fill ri-xl"></i></button
 			>
 		</div>
 	</div>
@@ -33,8 +35,12 @@
 		skeleton.insertAdjacentHTML('afterend', '<timer-slot></timer-slot>');
 	});
 	const currentStorage = JSON.parse(window.localStorage.getItem('timers'));
-	currentStorage && currentStorage.forEach(item => {
-		console.log(item)
-		skeleton.insertAdjacentHTML('beforebegin', `<timer-slot id="${item.id}" initial="${item.initialTime}" group="${item.group}" title="${item.title}"></timer-slot>`);
-	})
+	currentStorage &&
+		currentStorage.forEach(item => {
+			console.log(item);
+			skeleton.insertAdjacentHTML(
+				'beforebegin',
+				`<timer-slot id="${item.id}" initial="${item.initialTime}" group="${item.group}" title="${item.title}"></timer-slot>`
+			);
+		});
 </script>
