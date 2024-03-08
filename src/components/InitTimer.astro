@@ -201,10 +201,13 @@
 			document.addEventListener('global-stop', stop);
 
 			const handleTimerChange = () => {
-				const hts = parseInt(this.hoursEl.value) * 60 * 60;
+				const hrs = parseInt(this.hoursEl.value) * 60 * 60;
 				const mts = parseInt(this.minutesEl.value) * 60;
 				const seconds = parseInt(this.secondsEl.value);
-				this.initialTime = hts + mts + seconds;
+				this.initialTime =
+					(isNaN(hrs) ? 0 : hrs) +
+					(isNaN(mts) ? 0 : mts) +
+					(isNaN(seconds) ? 0 : seconds);
 				this.timeRemaining = this.initialTime * 10;
 				this.setDisplay(this.timeRemaining);
 				this.initialTimeIndicatorEl.textContent = this.parseSeconds(
