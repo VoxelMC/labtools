@@ -1,360 +1,414 @@
 <template id="timer-template">
-	<div id="timer" class="mb-4 h-44 w-80 px-4">
-		<div
-			class="mb-4 h-full w-full rounded-lg bg-dark-900 p-2 text-dark-200"
-		>
-			<div
-				id="title-bar"
-				class="mb-6 flex justify-between rounded-md bg-dark-600 pl-3 pr-2"
-			>
-				<span
-					contenteditable="true"
-					id="title"
-					class="mr-2 w-full font-bold"></span>
-				<span
-					id="initial-time-indicator"
-					class="mr-2 font-mono text-dark-300"></span>
-				<button
-					id="delete-button"
-					class="ri-close-circle-fill hover:text-red-200"></button>
-			</div>
-			<div
-				id="display"
-				class="mx-auto flex w-fit px-6 font-mono text-5xl data-[done=true]:text-green-400"
-				data-done="false"
-			>
-				<input
-					type="text"
-					inputmode="numeric"
-					id="hours"
-					maxlength="2"
-					onkeypress="validate(event)"
-					onclick="this.select();"
-					class="!inline max-w-[2ch] bg-transparent"
-				/>
-				<span id="sep-1">:</span>
-				<input
-					type="text"
-					inputmode="numeric"
-					id="minutes"
-					maxlength="2"
-					onkeypress="validate(event)"
-					onclick="this.select();"
-					class="!inline max-w-[2ch] bg-transparent"
-				/>
-				<span id="sep-2">:</span>
-				<input
-					type="text"
-					inputmode="numeric"
-					id="seconds"
-					maxlength="2"
-					onkeypress="validate(event)"
-					onclick="this.select();"
-					class="!inline max-w-[2ch] bg-transparent"
-				/>
-			</div>
+    <div id="timer" class="mb-4 h-44 w-80 px-4">
+        <div
+            class="mb-4 h-full w-full rounded-lg bg-dark-900 p-2 text-dark-200"
+        >
+            <div
+                id="title-bar"
+                class="mb-6 flex justify-between rounded-md bg-dark-600 pl-3 pr-2"
+            >
+                <span
+                    contenteditable="true"
+                    id="title"
+                    class="mr-2 w-full font-bold"></span>
+                <span
+                    id="initial-time-indicator"
+                    class="mr-2 font-mono text-dark-300"></span>
+                <button
+                    id="delete-button"
+                    class="ri-close-circle-fill hover:text-red-200"></button>
+            </div>
+            <div
+                id="display"
+                class="mx-auto flex w-fit px-6 font-mono text-5xl data-[done=true]:text-green-400"
+                data-done="false"
+            >
+                <input
+                    type="text"
+                    inputmode="numeric"
+                    id="hours"
+                    maxlength="2"
+                    onkeypress="validate(event)"
+                    onclick="this.select();"
+                    class="!inline max-w-[2ch] bg-transparent"
+                />
+                <span id="sep-1">:</span>
+                <input
+                    type="text"
+                    inputmode="numeric"
+                    id="minutes"
+                    maxlength="2"
+                    onkeypress="validate(event)"
+                    onclick="this.select();"
+                    class="!inline max-w-[2ch] bg-transparent"
+                />
+                <span id="sep-2">:</span>
+                <input
+                    type="text"
+                    inputmode="numeric"
+                    id="seconds"
+                    maxlength="2"
+                    onkeypress="validate(event)"
+                    onclick="this.select();"
+                    class="!inline max-w-[2ch] bg-transparent"
+                />
+            </div>
 
-			<div id="controls" class="mb-4 mt-5 flex justify-center">
-				<button
-					id="start-button"
-					data-hidden="false"
-					class="rounded-full bg-dark-700 px-4 text-center hover:bg-dark-600 data-[hidden=true]:hidden"
-					><i class="ri-play-large-fill"></i> Start</button
-				>
-				<button
-					id="pause-button"
-					data-hidden="true"
-					class="mr-3 rounded-full bg-dark-700 px-4 text-center hover:bg-dark-600 data-[hidden=true]:hidden"
-					><i class="ri-pause-fill ri-lg"></i> Pause</button
-				>
-				<button
-					id="stop-button"
-					data-hidden="true"
-					class="rounded-full bg-dark-700 px-4 text-center hover:bg-dark-600 data-[hidden=true]:hidden"
-					><i class="ri-stop-large-fill"></i> Stop</button
-				>
-			</div>
+            <div id="controls" class="mb-4 mt-5 flex justify-center">
+                <button
+                    id="start-button"
+                    data-hidden="false"
+                    class="rounded-full bg-dark-700 px-4 text-center hover:bg-dark-600 data-[hidden=true]:hidden"
+                    ><i class="ri-play-large-fill"></i> Start</button
+                >
+                <button
+                    id="pause-button"
+                    data-hidden="true"
+                    class="mr-3 rounded-full bg-dark-700 px-4 text-center hover:bg-dark-600 data-[hidden=true]:hidden"
+                    ><i class="ri-pause-fill ri-lg"></i> Pause</button
+                >
+                <button
+                    id="stop-button"
+                    data-hidden="true"
+                    class="rounded-full bg-dark-700 px-4 text-center hover:bg-dark-600 data-[hidden=true]:hidden"
+                    ><i class="ri-stop-large-fill"></i> Stop</button
+                >
+            </div>
 
-			<style>
-				* {
-				}
-			</style>
-		</div>
-	</div>
-	<script is:inline>
-		function validate(evt) {
-			var theEvent = evt;
+            <style>
+                * {
+                }
+            </style>
+        </div>
+    </div>
+    <script is:inline>
+        function validate(evt) {
+            var theEvent = evt;
 
-			// Handle paste
-			if (theEvent.type === 'paste') {
-				key = event.clipboardData.getData('text/plain');
-			} else {
-				// Handle key press
-				var key = theEvent.keyCode || theEvent.which;
-				key = String.fromCharCode(key);
-			}
-			var regex = /[0-9]|\./;
-			if (!regex.test(key)) {
-				theEvent.returnValue = false;
-				if (theEvent.preventDefault) theEvent.preventDefault();
-			}
-		}
-	</script>
+            // Handle paste
+            if (theEvent.type === 'paste') {
+                key = event.clipboardData.getData('text/plain');
+            } else {
+                // Handle key press
+                var key = theEvent.keyCode || theEvent.which;
+                key = String.fromCharCode(key);
+            }
+            var regex = /[0-9]|\./;
+            if (!regex.test(key)) {
+                theEvent.returnValue = false;
+                if (theEvent.preventDefault) theEvent.preventDefault();
+            }
+        }
+    </script>
 </template>
 <script is:inline>
-	class TimerElement extends HTMLElement {
-		timeDisplay;
-		titleEl;
-		startButton;
-		stopButton;
-		pauseButton;
-		deleteButton;
-		initialTime;
-		timeRemaining;
-		name;
-		timer;
-		hoursEl;
-		minutesEl;
-		secondsEl;
-		initialTimeIndicatorEl;
-		timerEl;
-		constructor() {
-			super();
-			let template = document.getElementById('timer-template');
-			let tempContent = template.content;
-			const shadowRoot = this.attachShadow({ mode: 'open' });
-			shadowRoot.appendChild(tempContent.cloneNode(true));
+    function setPersistentInterval(callback, interval, name) {
+        var key = '_timeInMs_' + (name || '');
+        var now = Date.now();
+        var timeInMs = localStorage.getItem(key);
+        var executeCallback = function () {
+            localStorage.setItem(key, Date.now());
+            callback();
+        };
+        localStorage.setItem(key, now);
+        if (timeInMs) {
+            // User has visited
+            var time = parseInt(timeInMs);
+            var delta = now - time;
+            if (delta > interval) {
+                // User has been away longer than interval
+                return setInterval(executeCallback, interval);
+            } else {
+                // Execute callback when we reach the next interval
+                // setTimeout(function () {
+                // 	setInterval(executeCallback, interval);
+                this.timeRemaining -= delta * 10;
+                return setInterval(executeCallback, interval);
+                // 	executeCallback();
+                // }, interval - delta);
+            }
+        } else {
+            return setInterval(executeCallback, interval);
+        }
+    }
+    class TimerElement extends HTMLElement {
+        timeDisplay;
+        titleEl;
+        startButton;
+        stopButton;
+        pauseButton;
+        deleteButton;
+        initialTime;
+        timeRemaining;
+        name;
+        timer;
+        hoursEl;
+        minutesEl;
+        secondsEl;
+        initialTimeIndicatorEl;
+        timerEl;
+        alarmSounds;
+        constructor() {
+            super();
+            let template = document.getElementById('timer-template');
+            let tempContent = template.content;
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            shadowRoot.appendChild(tempContent.cloneNode(true));
 
-			this.timeDisplay = this.shadowRoot?.getElementById('display');
-			this.titleEl = this.shadowRoot?.getElementById('title');
-			this.startButton = this.shadowRoot?.getElementById('start-button');
-			this.stopButton = this.shadowRoot?.getElementById('stop-button');
-			this.pauseButton = this.shadowRoot?.getElementById('pause-button');
-			this.deleteButton =
-				this.shadowRoot?.getElementById('delete-button');
+            this.timeDisplay = this.shadowRoot?.getElementById('display');
+            this.titleEl = this.shadowRoot?.getElementById('title');
+            this.startButton = this.shadowRoot?.getElementById('start-button');
+            this.stopButton = this.shadowRoot?.getElementById('stop-button');
+            this.pauseButton = this.shadowRoot?.getElementById('pause-button');
+            this.deleteButton =
+                this.shadowRoot?.getElementById('delete-button');
 
-			this.initialTime = 600;
-			this.timeRemaining = this.initialTime * 10;
+            this.initialTime = 600;
+            this.timeRemaining = this.initialTime * 10;
 
-			this.hoursEl = this.shadowRoot?.getElementById('hours');
-			this.minutesEl = this.shadowRoot?.getElementById('minutes');
-			this.secondsEl = this.shadowRoot?.getElementById('seconds');
+            this.hoursEl = this.shadowRoot?.getElementById('hours');
+            this.minutesEl = this.shadowRoot?.getElementById('minutes');
+            this.secondsEl = this.shadowRoot?.getElementById('seconds');
 
-			this.initialTimeIndicatorEl = this.shadowRoot?.getElementById(
-				'initial-time-indicator'
-			);
+            this.initialTimeIndicatorEl = this.shadowRoot?.getElementById(
+                'initial-time-indicator'
+            );
 
-			this.timerEl = this.shadowRoot?.getElementById('timer');
-		}
-		connectedCallback() {
-			for (let sheet of document.styleSheets) {
-				const newSheet = new CSSStyleSheet();
-				newSheet.replaceSync(
-					[...sheet.cssRules].map(s => s.cssText).join('\n')
-				);
-				this.shadowRoot?.adoptedStyleSheets.push(newSheet);
-			}
+            this.timerEl = this.shadowRoot?.getElementById('timer');
+            this.alarmSounds = [];
+        }
+        connectedCallback() {
+            for (let sheet of document.styleSheets) {
+                const newSheet = new CSSStyleSheet();
+                newSheet.replaceSync(
+                    [...sheet.cssRules].map(s => s.cssText).join('\n')
+                );
+                this.shadowRoot?.adoptedStyleSheets.push(newSheet);
+            }
 
-			this.initialTime = parseInt(this.getAttribute('initial')) || 600;
-			this.title = this.getAttribute('title') ?? null;
-			this.group = this.getAttribute('group') ?? 0;
-			this.setDisplay(this.initialTime * 10);
+            this.savedTabTitle = window.top.document.title;
+            this.alarmSounds.push(new Audio('/sounds/calm_alarm.mp3'));
 
-			const counterEl = document.getElementById('counter');
-			const currentCount = parseInt(counterEl.dataset.counter) + 1;
-			this.titleEl.textContent =
-				this.title !== 'null' ?
-					this.title
-				:	'Timer ' + currentCount.toString();
-			counterEl.dataset.counter = currentCount.toString();
+            this.initialTime = parseInt(this.getAttribute('initial')) || 840;
+            this.timeRemaining = this.initialTime * 10;
+            this.title = this.getAttribute('title') ?? null;
+            this.group = this.getAttribute('group') ?? 0;
+            this.setDisplay(this.initialTime * 10);
 
-			const start = () => {
-				this.startButton.dataset.hidden = 'true';
-				this.stopButton.dataset.hidden =
-					this.pauseButton.dataset.hidden = 'false';
-				this.startTimer();
-			};
+            const counterEl = document.getElementById('counter');
+            const currentCount = parseInt(counterEl.dataset.counter) + 1;
+            this.titleEl.textContent =
+                this.title !== 'null' ?
+                    this.title
+                :   (() => {
+                        return (this.title =
+                            'Timer ' + currentCount.toString());
+                    })();
+            counterEl.dataset.counter = currentCount.toString();
 
-			const pause = () => {
-				this.stopButton.dataset.hidden =
-					this.pauseButton.dataset.hidden = 'true';
-				this.startButton.dataset.hidden = 'false';
-				this.endTimer();
-			};
+            const start = () => {
+                this.startButton.dataset.hidden = 'true';
+                this.stopButton.dataset.hidden =
+                    this.pauseButton.dataset.hidden = 'false';
+                this.startTimer();
+            };
 
-			const stop = () => {
-				this.stopButton.dataset.hidden =
-					this.pauseButton.dataset.hidden = 'true';
-				this.startButton.dataset.hidden = 'false';
+            const pause = () => {
+                this.stopButton.dataset.hidden =
+                    this.pauseButton.dataset.hidden = 'true';
+                this.startButton.dataset.hidden = 'false';
+                this.endTimer();
+            };
 
-				this.setDisplay(this.initialTime * 10);
-				this.timeRemaining = this.initialTime * 10;
-				this.endTimer();
-				this.timeDisplay.dataset.done = 'false';
-			};
+            const stop = () => {
+                this.stopButton.dataset.hidden =
+                    this.pauseButton.dataset.hidden = 'true';
+                this.startButton.dataset.hidden = 'false';
 
-			this.startButton?.addEventListener('click', start);
-			this.pauseButton?.addEventListener('click', pause);
-			this.stopButton?.addEventListener('click', stop);
-			document.addEventListener('global-start', start);
-			document.addEventListener('global-pause', pause);
-			document.addEventListener('global-stop', stop);
+                this.setDisplay(this.initialTime * 10);
+                this.timeRemaining = this.initialTime * 10;
+                this.endTimer();
+                this.timeDisplay.dataset.done = 'false';
+            };
 
-			const handleTimerChange = () => {
-				const hrs = parseInt(this.hoursEl.value) * 60 * 60;
-				const mts = parseInt(this.minutesEl.value) * 60;
-				const seconds = parseInt(this.secondsEl.value);
-				this.initialTime =
-					(isNaN(hrs) ? 0 : hrs) +
-					(isNaN(mts) ? 0 : mts) +
-					(isNaN(seconds) ? 0 : seconds);
-				this.timeRemaining = this.initialTime * 10;
-				this.setDisplay(this.timeRemaining);
-				this.initialTimeIndicatorEl.textContent = this.parseSeconds(
-					this.timeRemaining
-				).join(':');
-				this.setPersistance(true, true);
-			};
-			this.hoursEl.addEventListener('change', handleTimerChange);
-			this.minutesEl.addEventListener('change', handleTimerChange);
-			this.secondsEl.addEventListener('change', handleTimerChange);
-			this.initialTimeIndicatorEl.textContent = this.parseSeconds(
-				this.timeRemaining
-			).join(':');
+            this.startButton?.addEventListener('click', start);
+            this.pauseButton?.addEventListener('click', pause);
+            this.stopButton?.addEventListener('click', stop);
+            document.addEventListener('global-start', start);
+            document.addEventListener('global-pause', pause);
+            document.addEventListener('global-stop', stop);
 
-			const deleteSelf = () => {
-				this.setPersistance(false);
-				this.remove();
-			};
-			this.deleteButton.addEventListener('click', () => {
-				deleteSelf();
-			});
-			document.addEventListener('delete-all-timers', () => {
-				deleteSelf();
-			});
+            const handleTimerChange = () => {
+                const hrs = parseInt(this.hoursEl.value) * 60 * 60;
+                const mts = parseInt(this.minutesEl.value) * 60;
+                const seconds = parseInt(this.secondsEl.value);
+                this.initialTime =
+                    (isNaN(hrs) ? 0 : hrs) +
+                    (isNaN(mts) ? 0 : mts) +
+                    (isNaN(seconds) ? 0 : seconds);
+                this.timeRemaining = this.initialTime * 10;
+                this.setDisplay(this.timeRemaining);
+                this.initialTimeIndicatorEl.textContent = this.parseSeconds(
+                    this.timeRemaining
+                ).join(':');
+                this.setPersistance(true, true);
+            };
+            this.hoursEl.addEventListener('change', handleTimerChange);
+            this.minutesEl.addEventListener('change', handleTimerChange);
+            this.secondsEl.addEventListener('change', handleTimerChange);
+            this.initialTimeIndicatorEl.textContent = this.parseSeconds(
+                this.timeRemaining
+            ).join(':');
 
-			this.titleEl.addEventListener('input', e => {
-				this.title = e.currentTarget.textContent.replaceAll('\n', ' ');
-				if (!e.data) {
-					e.currentTarget.blur();
-					e.currentTarget.textContent = this.title;
-				}
-				this.setPersistance(true, true);
-			});
-			this.setPersistance(true);
-		}
-		parseSeconds(seconds) {
-			seconds /= 10;
-			const hours = Math.floor(seconds / (60 * 60));
-			seconds -= hours * (60 * 60);
+            const deleteSelf = () => {
+                this.setPersistance(false);
+                this.remove();
+            };
+            this.deleteButton.addEventListener('click', () => {
+                deleteSelf();
+            });
+            document.addEventListener('delete-all-timers', () => {
+                deleteSelf();
+            });
 
-			const minutes = Math.floor(seconds / 60);
-			seconds -= minutes * 60;
-			seconds = Math.floor(seconds);
+            this.titleEl.addEventListener('input', e => {
+                this.title = e.currentTarget.textContent.replaceAll('\n', ' ');
+                if (!e.data) {
+                    e.currentTarget.blur();
+                    e.currentTarget.textContent = this.title;
+                }
+                this.setPersistance(true, true);
+            });
+            this.setPersistance(true);
+        }
+        parseSeconds(seconds) {
+            seconds /= 10;
+            const hours = Math.floor(seconds / (60 * 60));
+            seconds -= hours * (60 * 60);
 
-			return [
-				isNaN(hours) ? '00' : hours.toString().padStart(2, '0'),
-				isNaN(minutes) ? '00' : minutes.toString().padStart(2, '0'),
-				isNaN(seconds) ? '00' : seconds.toString().padStart(2, '0'),
-			];
-		}
-		startTimer() {
-			if (this.timeRemaining > 0 && !this.timer) {
-				this.timer = setInterval(() => {
-					if (this.timeRemaining === 0) {
-						this.endTimer();
-						this.timerComplete();
-						return;
-					}
-					this.timeRemaining -= 1;
-					this.setDisplay(this.timeRemaining);
-				}, 100);
-			} else {
-			}
-		}
-		endTimer() {
-			clearInterval(this.timer);
-			this.timer = undefined;
-		}
-		setTimer() {
-			this.timeDisplay.textContent;
-		}
-		setDisplay(seconds) {
-			let [hrs, mins, secs] = this.parseSeconds(seconds);
-			this.hoursEl.value = hrs;
-			this.minutesEl.value = mins;
-			this.secondsEl.value = secs;
-		}
-		timerComplete() {
-			this.timeDisplay.dataset.done = 'true';
-			return;
-		}
-		/**
-		 * Set the persistance state of the element. If true, adds to localStorage. If false, removes from localStorage if exists.
-		 * @param {boolean} value
-		 * @param {boolean?} update
-		 */
-		setPersistance(value, update) {
-			/**
-			 * @type {any[]}
-			 */
-			const currentStorage = JSON.parse(
-				window.localStorage.getItem('timers')
-			);
-			const giveUniqueId = () => {
-				const val = Math.floor(1000 + Math.random() * 9000);
-				this.id = val;
-				if (
-					currentStorage != null &&
-					currentStorage.some(e => e.id == this.id)
-				) {
-					this.id = parseInt(this.id) + 1;
-				}
-			};
-			if (value) {
-				if (update) {
-					const index = currentStorage.findIndex(
-						item => item.id == this.id
-					);
-					console.log(this.initialTime);
-					const data = {
-						id: this.id,
-						initialTime: this.initialTime,
-						title: this.title,
-						group: 0,
-					};
-					currentStorage[index] = data;
-					const newStorage = JSON.stringify([...currentStorage]);
-					window.localStorage.setItem('timers', newStorage);
-					return;
-				}
-				if (
-					currentStorage != null &&
-					currentStorage.some(e => e.id == this.id)
-				)
-					return;
-				giveUniqueId();
-				const data = {
-					id: this.id,
-					initialTime: this.initialTime,
-					title: this.title,
-					group: 0,
-				};
-				const newStorage =
-					currentStorage != null ?
-						JSON.stringify([...currentStorage, data])
-					:	JSON.stringify([data]);
-				window.localStorage.setItem('timers', newStorage);
-			} else {
-				// remove from localStorage by unique id from data.
-				const index = currentStorage.findIndex(
-					item => item.id == this.id
-				);
-				currentStorage.splice(index, 1);
-				const newStorage = JSON.stringify(currentStorage);
-				window.localStorage.setItem('timers', newStorage);
-			}
-		}
-	}
-	customElements.define('timer-slot', TimerElement);
+            const minutes = Math.floor(seconds / 60);
+            seconds -= minutes * 60;
+            seconds = Math.floor(seconds);
+
+            return [
+                isNaN(hours) ? '00' : hours.toString().padStart(2, '0'),
+                isNaN(minutes) ? '00' : minutes.toString().padStart(2, '0'),
+                isNaN(seconds) ? '00' : seconds.toString().padStart(2, '0'),
+            ];
+        }
+        startTimer() {
+            let startingTime = Date.now();
+            if (this.timeRemaining > 0 && !this.timer) {
+                this.timer = setPersistentInterval(
+                    () => {
+                        if (this.timeRemaining === 0) {
+                            this.endTimer();
+                            this.timerComplete();
+                            return;
+                        }
+                        // NOTE: This persists the timer, but still doesn't play audio when the tab is closed...
+                        this.timeRemaining =
+                            10 * this.initialTime -
+                            Math.floor((Date.now() - startingTime) / 100);
+                        this.setDisplay(this.timeRemaining);
+                    },
+                    100,
+                    this.id
+                );
+            } else {
+            }
+        }
+        endTimer() {
+            clearInterval(this.timer);
+            this.alarmSounds[0].pause();
+            this.alarmSounds[0].currentTime = 0.0;
+            this.alarmSounds[0].autoplay = 'false';
+            this.timer = undefined;
+            window.top.document.title = this.savedTabTitle;
+        }
+        setTimer() {
+            this.timeDisplay.textContent;
+        }
+        setDisplay(seconds) {
+            let [hrs, mins, secs] = this.parseSeconds(seconds);
+            this.hoursEl.value = hrs;
+            this.minutesEl.value = mins;
+            this.secondsEl.value = secs;
+        }
+        timerComplete() {
+            this.timeDisplay.dataset.done = 'true';
+            // Just trying this with autoplay for now
+            this.alarmSounds[0].autoplay = 'true';
+            this.alarmSounds[0].play();
+            window.top.document.title = this.title + ' is Complete!';
+            return;
+        }
+        /**
+         * Set the persistance state of the element. If true, adds to localStorage. If false, removes from localStorage if exists.
+         * @param {boolean} value
+         * @param {boolean?} update
+         */
+        setPersistance(value, update) {
+            /**
+             * @type {any[]}
+             */
+            const currentStorage = JSON.parse(
+                window.localStorage.getItem('timers')
+            );
+            const giveUniqueId = () => {
+                const val = Math.floor(1000 + Math.random() * 9000);
+                this.id = val;
+                if (
+                    currentStorage != null &&
+                    currentStorage.some(e => e.id == this.id)
+                ) {
+                    this.id = parseInt(this.id) + 1;
+                }
+            };
+            if (value) {
+                if (update) {
+                    const index = currentStorage.findIndex(
+                        item => item.id == this.id
+                    );
+                    const data = {
+                        id: this.id,
+                        initialTime: this.initialTime,
+                        title: this.title,
+                        group: 0,
+                    };
+                    currentStorage[index] = data;
+
+                    const newStorage = JSON.stringify([...currentStorage]);
+                    window.localStorage.setItem('timers', newStorage);
+                    return;
+                }
+                if (
+                    currentStorage != null &&
+                    currentStorage.some(e => e.id == this.id)
+                )
+                    return;
+                giveUniqueId();
+                const data = {
+                    id: this.id,
+                    initialTime: this.initialTime,
+                    title: this.title,
+                    group: 0,
+                };
+                const newStorage =
+                    currentStorage != null ?
+                        JSON.stringify([...currentStorage, data])
+                    :   JSON.stringify([data]);
+                window.localStorage.setItem('timers', newStorage);
+            } else {
+                // remove from localStorage by unique id from data.
+                const index = currentStorage.findIndex(
+                    item => item.id == this.id
+                );
+                currentStorage.splice(index, 1);
+                const newStorage = JSON.stringify(currentStorage);
+                window.localStorage.setItem('timers', newStorage);
+            }
+        }
+    }
+    customElements.define('timer-slot', TimerElement);
 </script>
