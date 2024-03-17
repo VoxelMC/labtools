@@ -301,7 +301,7 @@
             if (this.timeRemaining > 0 && !this.timer) {
                 this.timer = setPersistentInterval(
                     () => {
-                        if (this.timeRemaining >= 0) {
+                        if (this.timeRemaining <= 0) {
                             this.endTimer();
                             this.timerComplete();
                             return;
