@@ -1,0 +1,170 @@
+---
+import 'remixicon/fonts/remixicon.css';
+import Nav from '../components/Nav.astro';
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>:) Fetcher | labtools.trevfox.dev</title>
+	</head>
+	<body class="bg-dark-950">
+		<Nav />
+		<section
+			class="flex flex-wrap justify-start px-8 w500:mt-8 w500:flex-col w500:items-center"
+		>
+			<div class="w-screen rounded-xl bg-dark-900 px-6 pt-4 pb-2">
+				<h1 class="mb-4 font-mono text-3xl font-bold text-blue-400">
+					Smiles Finder
+				</h1>
+				<form id="entry" action="#here">
+					<label
+						for="search"
+						class="mb-1 block font-mono text-dark-50"
+						>Search Compounds:</label
+					>
+					<div class="w-full">
+						<input
+							autofocus
+							type="text"
+							name="search"
+							id="search"
+							placeholder="camphor, secologanin, acetic anhydride"
+							spellcheck="false"
+							class="mb-4 inline-block w-3/4 rounded-md bg-dark-300 px-3 py-1 font-mono text-sm text-dark-950"
+						/>
+						<button
+							id="submit"
+							type="submit"
+							class="rounded-md bg-green-500 px-3 inline-block py-1 text-sm font-bold"
+						>Submit</button
+						>
+						<button
+							id="clear"
+							type="button"
+							class="rounded-md inline-block bg-red-500 ml-auto px-3 py-1 text-sm font-bold"
+						>Clear</button
+						>
+					</div>
+				</form>
+			</div>
+			<div class="w-full" id="output"></div>
+		</section>
+		<script>
+			import { PubChemUrlBuilder } from '../util/pubchemBuilder';
+
+			const inputEl = document.getElementById(
+				'search'
+			) as HTMLInputElement;
+			const entryFormEl = document.getElementById(
+				'entry'
+			) as HTMLFormElement;
+			const clearButtonEl = document.getElementById(
+				'clear'
+			) as HTMLFormElement;
+			const outputEl = document.getElementById(
+				'output'
+			) as HTMLInputElement;
+
+			inputEl.value = 'irinotecan, topotecan, secologanin';
+
+			const getUrl = (standardizedInput: string) =>
+				encodeURI(
+					new PubChemUrlBuilder()
+						.forCompound()
+						.findByName(standardizedInput)
+						.asJSON()
+						.withProperties('IsomericSMILES')
+						.toString()
+				);
+
+			interface JsonRes {
+				PropertyTable: {
+					Properties: { IsomericSMILES: string }[];
+				};
+			}
+
+			let count = 0;
+			entryFormEl.addEventListener('submit', async e => {
+				e.preventDefault();
+				const input = inputEl.value
+					.split(',')
+					.map(item => item.trim().toLowerCase());
+				const urlArray = input.map(input => ({
+					url: getUrl(input),
+					name: input,
+				}));
+
+				for (let { url, name } of urlArray) {
+					const newSpan = document.createElement('span');
+					const titleSpan = document.createElement('span');
+					const div = document.createElement('div');
+					let json: JsonRes | undefined;
+					try {
+						const res = await fetch(url);
+						json = (await res.json()) as JsonRes;
+						if (!json.PropertyTable.Properties[0]) return;
+						newSpan.textContent =
+							json.PropertyTable.Properties[0].IsomericSMILES;
+					} catch {
+						newSpan.textContent =
+							'This compound could not be found. Please refine your search term or search on PubChem manually.';
+					} finally {
+						count += 1;
+						newSpan.classList.add(
+							...'output cursor-context-menu bg-slate-100 block px-2 py-.5 font-mono font-normal text-sm rounded-sm'.split(
+								' '
+							)
+						);
+						titleSpan.classList.add(
+							...'font-bold text-dark-100 block font-mono'.split(
+								' '
+							)
+						);
+						div.classList.add(
+							...'font-bold block bg-dark-900 w-full my-2 px-3 pb-3 pt-2 rounded-lg'.split(
+								' '
+							)
+						);
+						titleSpan.textContent = `[${count}] ${name}:`;
+						div.append(titleSpan);
+						div.append(newSpan);
+						outputEl.append(div);
+					}
+				}
+
+
+
+				const spans = document.getElementsByClassName(
+					'output'
+				) as HTMLCollectionOf<HTMLSpanElement>;
+				for (let span of spans) {
+					span.onclick = function () {
+						document.execCommand('copy');
+						span.style.mixBlendMode = 'overlay';
+						setTimeout(() => {
+							span.style.mixBlendMode = 'normal';
+						}, 100);
+					};
+
+					span.addEventListener('copy', function (event) {
+						event.preventDefault();
+						if (event.clipboardData) {
+							event.clipboardData.setData(
+								'text/plain',
+								span.textContent as string
+							);
+						}
+					});
+				}
+			});
+
+			clearButtonEl.addEventListener('click', () => {
+				outputEl.replaceChildren("");
+			})
+		</script>
+	</body>
+</html>

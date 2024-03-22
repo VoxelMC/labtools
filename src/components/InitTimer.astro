@@ -304,9 +304,9 @@
                         if (this.timeRemaining <= 0) {
                             this.endTimer();
                             this.timerComplete();
+							this.setDisplay(0);
                             return;
                         }
-                        // NOTE: This persists the timer, but still doesn't play audio when the tab is closed...
                         this.timeRemaining =
                             10 * this.initialTime -
                             Math.floor((Date.now() - startingTime) / 100);

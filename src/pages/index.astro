@@ -1,34 +1,53 @@
 ---
 import 'remixicon/fonts/remixicon.css';
 import Card from '../components/Card.astro';
-import Logo from '../components/Logo.astro';
+import Nav from '../components/Nav.astro';
 ---
 
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Home | labtools.trevfox.dev</title>
-	</head>
-	<body class="bg-dark-950">
-		<nav
-			class="mb-4 flex h-10 w-full items-center justify-around bg-dark-900"
-		>
-			<Logo />
-			<a
-				class="mr-2 rounded-full bg-dark-500 px-4 py-1 font-mono"
-				href="/timers"><i class="ri-timer-fill mr-2"></i>Timers</a
-			>
-		</nav>
-		<section id="timers" class="flex w500:flex-col w500:items-center flex-wrap justify-start px-8 w500:mt-8">
-			<Card href='/timers' title="Timers" ri-icon="timer">
-				<p class="italic text-center">This labtool contains multiple configurable timers!</p>
-				<br>
-				<p class="text-sm text-pretty text-left">You can <span class="text-green-400">start</span>/<span class="text-red-300">stop</span>/<span class="text-yellow-400">pause</span> them all <b>simultaneously</b> or <b>individually</b>, and set
-				them to whatever you need them to be.</p>
-			</Card>
-		</section>
-	</body>
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="generator" content={Astro.generator} />
+        <title>Home | labtools.trevfox.dev</title>
+    </head>
+    <body class="bg-dark-950">
+        <Nav />
+        <section
+            id="cards"
+            class="flex flex-wrap justify-start px-8 w500:mt-8 w500:flex-col w500:items-center"
+        >
+            <Card href="/timers" title="Timers" ri-icon="timer">
+                <p class="text-center italic">
+                    This labtool contains multiple configurable timers!
+                </p>
+                <br />
+                <p class="text-pretty text-left text-sm">
+                    You can <span class="text-green-400">start</span>/<span
+                        class="text-red-300">stop</span
+                    >/<span class="text-yellow-400">pause</span> them all <b
+                        >simultaneously</b
+                    > or <b>individually</b>, and set them to whatever you need
+                    them to be.
+                </p>
+            </Card>
+            <Card
+                href="/smiles-fetcher"
+                title="Smiles Fetcher"
+                ri-icon="hexagon"
+            >
+                <p class="text-center italic">
+                    This labtool fetches SMILES chains from chemical names!
+                </p>
+                <br />
+                <p class="text-pretty text-left text-sm">
+                    Search <span class="text-blue-400">PubChem</span> for <span
+                        class="text-yellow-300">SMILES</span
+                    >
+                    chains and view their <b>chemical structures</b>.
+                </p>
+            </Card>
+        </section>
+    </body>
 </html>
