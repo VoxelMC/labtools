@@ -1,0 +1,356 @@
+---
+import 'remixicon/fonts/remixicon.css';
+import Nav from '../components/Nav.astro';
+---
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="generator" content={Astro.generator} />
+        <title>Equimolarizer | labtools.trevfox.dev</title>
+    </head>
+    <body class="bg-dark-950">
+        <Nav />
+        <section
+            class="flex flex-wrap justify-start px-8 w500:mt-8 w500:flex-col w500:items-center"
+        >
+            <div class="w-screen rounded-xl bg-dark-900 px-6 pb-2 pt-4">
+                <h1 class="mb-4 font-mono text-3xl font-bold text-blue-400">
+                    Equimolarizer
+                </h1>
+                <form
+                    id="entry"
+                    action="#here"
+                    class="flex flex-col space-y-2 pb-2 text-white"
+                >
+                    <div class="">
+                        <label for="reaction-vol">Reaction Volume (&mu;L)</label
+                        >
+                        <input
+                            class="text-black"
+                            name="reaction-vol"
+                            id="reaction-vol"
+                            type="number"
+                            value="50"
+                        />
+                    </div>
+                    <div>
+                        <label for="backbone-mass"
+                            >Mass of Backbone Plasmid (ng)</label
+                        >
+                        <input
+                            class="text-black"
+                            name="backbone-mass"
+                            id="backbone-mass"
+                            type="number"
+                            value="75"
+                        />
+                    </div>
+                    <div
+                        id="plasmids"
+                        class="!mt-4 w-full overflow-clip rounded-lg bg-dark-600"
+                    >
+                    </div>
+                    <div id="buttons" class="flex w-full justify-between">
+                        <button
+                            type="button"
+                            id="add-plasmid-btn"
+                            class="rounded-lg bg-dark-500 px-3 py-1 font-bold text-yellow-300"
+                            >Add Plasmid</button
+                        >
+                        <button
+                            type="button"
+                            class="rounded-lg bg-red-500 px-3 py-1 font-bold text-yellow-300"
+                            id="delete-all-btn"
+                        >
+                            <i class="ri-error-warning-line ri-lg"></i> Clear Plasmids
+                        </button>
+                    </div>
+                    <div id="final-buttons">
+                        <button
+                            type="button"
+                            id="calculate-btn"
+                            class="rounded-lg bg-dark-500 px-3 py-1 font-bold text-green-200"
+                            >Calculate</button
+                        >
+                    </div>
+                </form>
+            </div>
+            <div
+                id="output"
+                class="mt-4 w-screen rounded-xl bg-dark-900 px-6 pb-2 pt-4"
+            >
+                <h2 class="mb-4 font-mono text-xl font-bold text-green-400">
+                    Reactions
+                </h2>
+            </div>
+        </section>
+        <template id="plasmid-row-template">
+            <div id="" class="plasmid-row w-full p-3">
+                <div class="flex flex-row items-center">
+                    <span id="pname-def" class="font-bold text-yellow-300"
+                    ></span>
+                    <label class="ml-2">- Name:</label>
+                    <input
+                        type="text"
+                        id="pname"
+                        class="name ml-2 block text-black"
+                    />
+                </div>
+                <div class="ml-3">
+                    <label for="pbases">Plasmid Length (bp)</label>
+                    <input
+                        id="pbases"
+                        type="number"
+                        min="0"
+                        class="ml-2 mr-4 text-black"
+                        value="10"
+                    />
+                    <label for="pconc">Stock Concentration (ng/&mu;L)</label>
+                    <input
+                        id="pconc"
+                        type="number"
+                        min="0"
+                        class="ml-2 text-black"
+                        value="80"
+                    />
+                </div>
+                <div class="ml-auto flex items-center pr-3">
+                    <div
+                        id="pdelete"
+                        class="flex aspect-square h-7 cursor-pointer items-center justify-center rounded-xl bg-red-500"
+                    >
+                        <i class="ri-delete-bin-fill text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <style>
+            .plasmid-row:nth-child(even) {
+                @apply bg-dark-700;
+            }
+
+            input {
+                @apply w-20 rounded-lg bg-dark-300 px-2 py-1;
+            }
+
+            input:is(.name) {
+                @apply w-40;
+            }
+
+            .plasmid-row {
+                @apply flex flex-row flex-wrap;
+            }
+
+            #output {
+                @apply text-dark-200;
+            }
+        </style>
+        <style is:inline>
+            #output table {
+                text-align: center;
+                margin-bottom: 2em;
+                background-color: rgb(126 107 192);
+                border-radius: 0.75em;
+            }
+
+            #output > table:nth-last-of-type(1) {
+                margin-bottom: 1em;
+            }
+            #output table th {
+                padding-block: 1em;
+                padding-inline: 5em;
+            }
+
+            #output table tr:nth-child(even) {
+                background-color: rgb(109 90 168);
+            }
+        </style>
+
+        <script>
+            const $id = (id: string) =>
+                document.getElementById(id) as HTMLElement;
+
+            const addPlasmidBtn = $id('add-plasmid-btn');
+            const deleteAllBtn = $id('delete-all-btn');
+            const calculateBtn = $id('calculate-btn');
+            const plasmids = $id('plasmids');
+
+            addPlasmidBtn.click();
+
+            // TODO: save these vals. Not necessary yet.
+            const reactionVol = $id('reaction-volume') as HTMLInputElement;
+            const backboneMass = $id('backbone-mass') as HTMLInputElement;
+
+            const outputDiv = $id('output') as HTMLDivElement;
+
+            const template = $id('plasmid-row-template') as HTMLTemplateElement;
+            let counter = 0;
+
+            const debounce = (func: Function, delay: number) => {
+                let debounceTimer: number;
+                return function () {
+                    // @ts-ignore
+                    const context = this;
+                    const args = arguments;
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(
+                        () => func.apply(context, args),
+                        delay
+                    );
+                };
+            };
+
+            function createRow(isBackbone = false): HTMLElement {
+                let clone = template.content.cloneNode(true) as HTMLDivElement;
+                let pbases = clone.querySelector('#pbases') as HTMLInputElement;
+                let pconc = clone.querySelector('#pconc') as HTMLInputElement;
+                let pname = clone.querySelector('#pname') as HTMLInputElement;
+                let pdelete = clone.querySelector('#pdelete') as HTMLDivElement;
+                let pnameDef = clone.querySelector(
+                    '#pname-def'
+                ) as HTMLSpanElement;
+                let newId = isBackbone ? 'backbone' : 'plasmid-' + counter;
+                let newName =
+                    isBackbone ? 'Backbone' : 'Plasmid #' + counter.toString();
+
+                clone.children[0]!.id = newId;
+
+                pnameDef.textContent = newName;
+                pname.value = newName;
+
+                if (isBackbone) pdelete.remove();
+
+                let prefix = isBackbone ? 'backbone-' : 'plasmid-';
+
+                pbases.id = prefix + counter + '-bases';
+                pconc.id = prefix + counter + '-conc';
+                pname.id = prefix + counter + '-name';
+                pdelete.id = prefix + counter + '-delete';
+
+                pdelete?.addEventListener('click', () => {
+                    document.querySelector('#' + newId)!.remove();
+                    localStorage.removeItem(newId);
+                });
+
+                counter += 1;
+
+                // TODO: rework the way that the things are saved using maybe a map. At least for now i will save the results table.
+                localStorage.setItem(
+                    newId,
+                    JSON.stringify({
+                        name: newId,
+                        conc: 0,
+                        length: 0,
+                    } as Row)
+                );
+
+                clone
+                    .querySelectorAll('input')
+                    .forEach((val, _key, _parent) => {
+                        let el = val as HTMLInputElement;
+                        el.addEventListener(
+                            'keydown',
+                            debounce(() => {
+                                let newItem = JSON.stringify({
+                                    name: pname.value as string,
+                                    conc: parseInt(pconc.value),
+                                    length: parseInt(pbases.value),
+                                } as Row);
+                                console.log(newItem);
+                            }, 500)
+                        );
+                    });
+
+                return clone;
+            }
+
+            let bbNode = createRow(true);
+            plasmids.appendChild(bbNode);
+
+            interface Row {
+                name: string;
+                conc: number;
+                length: number;
+            }
+
+            addPlasmidBtn.addEventListener('click', () => {
+                let node = createRow();
+                plasmids.appendChild(node);
+            });
+
+            deleteAllBtn.addEventListener('click', () => {
+                const go = confirm(
+                    'Are you sure you want to reset the plasmid rows?'
+                );
+                if (go) {
+                    let bbNode = createRow(true);
+                    plasmids.replaceChildren(bbNode);
+                    counter = 1;
+                }
+            });
+
+            calculateBtn.addEventListener('click', () => {
+                const avgBasePairMass = 650;
+                // TODO: Make this user input
+                const fragmentToBackboneRatio = 2;
+
+                const ps = document.querySelectorAll('.plasmid-row');
+                if (ps.length < 2) return;
+                const mapped = [...ps].map((val, _i) => {
+                    let inputs = val.querySelectorAll('input');
+                    let row: Row = {
+                        name: inputs[0]!.value,
+                        length: parseInt(inputs[1]!.value),
+                        conc: parseInt(inputs[2]!.value),
+                    };
+                    return row;
+                });
+
+                let bbMass = parseInt(backboneMass.value) / 10 ** 9;
+                let backbone = mapped[0] as Row;
+                let bbMoles = bbMass / (backbone?.length * avgBasePairMass);
+                let bbVol = (bbMass * 10 ** 9) / backbone.conc;
+
+                let row = document.createElement('tr');
+                let nameCell = document.createElement('td');
+                nameCell.textContent = backbone.name;
+                let massCell = document.createElement('td');
+                massCell.textContent = (bbMass * 10 ** 9).toFixed(2);
+                let volCell = document.createElement('td');
+                volCell.textContent = bbVol.toFixed(2);
+                row.replaceChildren(nameCell, massCell, volCell);
+
+                let table = document.createElement('table');
+                table.innerHTML =
+                    '<tr><th>Plasmid</th><th>Mass Required (ng)</th><th>Volume Required (&mu;L)</th></tr>';
+
+                table.appendChild(row);
+
+                mapped.forEach((val, i, _arr) => {
+                    if (i == 0) return;
+                    // let ratio = i == 0 ? 1 : fragmentToBackboneRatio;
+                    let molarMass = val.length * avgBasePairMass; // Da
+                    let targetMoles = bbMoles * fragmentToBackboneRatio;
+                    let massRequired = targetMoles * molarMass;
+                    let volRequired = (massRequired * 10 ** 9) / val.conc;
+
+                    let row = document.createElement('tr');
+                    let nameCell = document.createElement('td');
+                    nameCell.textContent = val.name;
+                    let massCell = document.createElement('td');
+                    massCell.textContent = (massRequired * 10 ** 9).toFixed(2);
+                    let volCell = document.createElement('td');
+                    volCell.textContent = volRequired.toFixed(2);
+
+                    row.replaceChildren(nameCell, massCell, volCell);
+                    table.appendChild(row);
+                });
+
+                outputDiv.appendChild(table);
+            });
+        </script>
+    </body>
+</html>
