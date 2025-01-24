@@ -53,7 +53,10 @@ import Nav from '../components/Nav.astro';
                         class="!mt-4 w-full overflow-clip rounded-lg bg-dark-600"
                     >
                     </div>
-                    <div id="buttons" class="flex w-full justify-between">
+                    <div
+                        id="buttons"
+                        class="flex w-full justify-between font-mono"
+                    >
                         <button
                             type="button"
                             id="add-plasmid-btn"
@@ -68,27 +71,29 @@ import Nav from '../components/Nav.astro';
                             <i class="ri-error-warning-line ri-lg"></i> Clear Plasmids
                         </button>
                     </div>
-                    <div id="final-buttons">
+                    <div id="final-buttons" class="!mt-4">
                         <button
                             type="button"
                             id="calculate-btn"
-                            class="rounded-lg bg-dark-500 px-3 py-1 font-bold text-green-200"
+                            class="rounded-lg bg-dark-500 px-3 py-1 font-mono font-bold text-green-200"
                             >Calculate</button
                         >
                     </div>
                 </form>
             </div>
-            <div
-                id="output"
-                class="mt-4 w-screen rounded-xl bg-dark-900 px-6 pb-2 pt-4"
-            >
+            <div class="mt-4 w-screen rounded-xl bg-dark-900 px-6 pb-2 pt-4">
                 <h2 class="mb-4 font-mono text-xl font-bold text-green-400">
                     Reactions
                 </h2>
+                <div id="output" class="w-full">
+                    <span class="mb-3 inline-block font-mono opacity-70"
+                        >It's empty here...</span
+                    >
+                </div>
             </div>
         </section>
         <template id="plasmid-row-template">
-            <div id="" class="plasmid-row w-full p-3">
+            <div id="" class="plasmid-row w-full overflow-clip p-3">
                 <div class="flex flex-row items-center">
                     <span id="pname-def" class="font-bold text-yellow-300"
                     ></span>
@@ -154,6 +159,11 @@ import Nav from '../components/Nav.astro';
                 margin-bottom: 2em;
                 background-color: rgb(126 107 192);
                 border-radius: 0.75em;
+                overflow: clip;
+                -webkit-animation: slide-in-blurred-left 0.6s
+                    cubic-bezier(0.23, 1, 0.32, 1) both;
+                animation: slide-in-blurred-left 0.6s
+                    cubic-bezier(0.23, 1, 0.32, 1) both;
             }
 
             #output > table:nth-last-of-type(1) {
@@ -167,9 +177,33 @@ import Nav from '../components/Nav.astro';
             #output table tr:nth-child(even) {
                 background-color: rgb(109 90 168);
             }
+
+            @-webkit-keyframes slide-in-blurred-left {
+                0% {
+                    -webkit-transform: translateX(-1000px) scaleX(2.5)
+                        scaleY(0.2);
+                    transform: translateX(-1000px) scaleX(2.5) scaleY(0.2);
+                    -webkit-transform-origin: 100% 50%;
+                    transform-origin: 100% 50%;
+                    -webkit-filter: blur(40px);
+                    filter: blur(40px);
+                    opacity: 0;
+                }
+                100% {
+                    -webkit-transform: translateX(0) scaleY(1) scaleX(1);
+                    transform: translateX(0) scaleY(1) scaleX(1);
+                    -webkit-transform-origin: 50% 50%;
+                    transform-origin: 50% 50%;
+                    -webkit-filter: blur(0);
+                    filter: blur(0);
+                    opacity: 1;
+                }
+            }
         </style>
 
         <script>
+            import sui from 'short-unique-id';
+            const uid = new sui({ length: 14 });
             const $id = (id: string) =>
                 document.getElementById(id) as HTMLElement;
 
@@ -202,6 +236,29 @@ import Nav from '../components/Nav.astro';
                     );
                 };
             };
+
+            function getPersist(): Map<string, Row[]> {
+                return new Map(
+                    JSON.parse(
+                        localStorage.getItem('persist') ??
+                            JSON.stringify(new Map())
+                    )
+                ) as Map<string, Row[]>;
+            }
+
+            function storePersist(map: Map<string, Row[]>) {
+                localStorage.setItem('persist', JSON.stringify([...map]));
+            }
+
+            function persistRow(id: string, row: Row[]) {
+                storePersist(getPersist().set(id, row));
+            }
+
+            function abandonRow(id: string) {
+                let persisted = getPersist();
+                getPersist().delete(id);
+                storePersist(persisted);
+            }
 
             function createRow(isBackbone = false): HTMLElement {
                 let clone = template.content.cloneNode(true) as HTMLDivElement;
@@ -238,14 +295,14 @@ import Nav from '../components/Nav.astro';
                 counter += 1;
 
                 // TODO: rework the way that the things are saved using maybe a map. At least for now i will save the results table.
-                localStorage.setItem(
-                    newId,
-                    JSON.stringify({
-                        name: newId,
-                        conc: 0,
-                        length: 0,
-                    } as Row)
-                );
+                // localStorage.setItem(
+                //     newId,
+                //     JSON.stringify({
+                //         name: newId,
+                //         conc: 0,
+                //         length: 0,
+                //     } as Row)
+                // );
 
                 clone
                     .querySelectorAll('input')
@@ -293,6 +350,7 @@ import Nav from '../components/Nav.astro';
             });
 
             calculateBtn.addEventListener('click', () => {
+                let id = uid.seq();
                 const avgBasePairMass = 650;
                 // TODO: Make this user input
                 const fragmentToBackboneRatio = 2;
@@ -314,43 +372,63 @@ import Nav from '../components/Nav.astro';
                 let bbMoles = bbMass / (backbone?.length * avgBasePairMass);
                 let bbVol = (bbMass * 10 ** 9) / backbone.conc;
 
-                let row = document.createElement('tr');
-                let nameCell = document.createElement('td');
-                nameCell.textContent = backbone.name;
-                let massCell = document.createElement('td');
-                massCell.textContent = (bbMass * 10 ** 9).toFixed(2);
-                let volCell = document.createElement('td');
-                volCell.textContent = bbVol.toFixed(2);
-                row.replaceChildren(nameCell, massCell, volCell);
+                let row = createTableRow(
+                    backbone.name,
+                    bbMass * 10 ** 9,
+                    bbVol
+                );
 
                 let table = document.createElement('table');
+                table.id = id;
                 table.innerHTML =
                     '<tr><th>Plasmid</th><th>Mass Required (ng)</th><th>Volume Required (&mu;L)</th></tr>';
 
                 table.appendChild(row);
+                // persistRow(id, mapped);
 
                 mapped.forEach((val, i, _arr) => {
                     if (i == 0) return;
-                    // let ratio = i == 0 ? 1 : fragmentToBackboneRatio;
                     let molarMass = val.length * avgBasePairMass; // Da
                     let targetMoles = bbMoles * fragmentToBackboneRatio;
                     let massRequired = targetMoles * molarMass;
                     let volRequired = (massRequired * 10 ** 9) / val.conc;
 
-                    let row = document.createElement('tr');
-                    let nameCell = document.createElement('td');
-                    nameCell.textContent = val.name;
-                    let massCell = document.createElement('td');
-                    massCell.textContent = (massRequired * 10 ** 9).toFixed(2);
-                    let volCell = document.createElement('td');
-                    volCell.textContent = volRequired.toFixed(2);
+                    let row = createTableRow(
+                        val.name,
+                        massRequired * 10 ** 9,
+                        volRequired
+                    );
 
-                    row.replaceChildren(nameCell, massCell, volCell);
                     table.appendChild(row);
                 });
 
-                outputDiv.appendChild(table);
+                if (outputDiv.children[0]?.tagName == 'SPAN') {
+                    outputDiv.replaceChildren(table);
+                } else {
+                    (
+                        outputDiv.children[0] as HTMLElement
+                    ).insertAdjacentElement('beforebegin', table);
+                }
             });
+
+            function createTableRow(name: string, mass: number, vol: number) {
+                let row = document.createElement('tr');
+                let nameCell = document.createElement('td');
+                nameCell.textContent = name;
+                let massCell = document.createElement('td');
+                massCell.textContent = mass.toFixed(2);
+                let volCell = document.createElement('td');
+                volCell.textContent = vol.toFixed(2);
+                row.replaceChildren(nameCell, massCell, volCell);
+                return row;
+            }
+
+            // document.addEventListener('DOMContentLoaded', () => {
+            //     [...getPersist()].map(val => {
+            //         let [key, row] = val;
+            //         console.log(key, row);
+            //     });
+            // });
         </script>
     </body>
 </html>
