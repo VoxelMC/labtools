@@ -250,10 +250,12 @@ import Nav from '../components/Nav.astro';
                 localStorage.setItem('persist', JSON.stringify([...map]));
             }
 
+            // @ts-ignore
             function persistRow(id: string, row: Row[]) {
                 storePersist(getPersist().set(id, row));
             }
 
+            // @ts-ignore
             function abandonRow(id: string) {
                 let persisted = getPersist();
                 getPersist().delete(id);
@@ -384,7 +386,6 @@ import Nav from '../components/Nav.astro';
                     '<tr><th>Plasmid</th><th>Mass Required (ng)</th><th>Volume Required (&mu;L)</th></tr>';
 
                 table.appendChild(row);
-                // persistRow(id, mapped);
 
                 mapped.forEach((val, i, _arr) => {
                     if (i == 0) return;
